@@ -2,7 +2,7 @@
 Wikipedia Search Tool
 ---------------------
 Fetches a short summary of any topic from Wikipedia.
-Uses the Wikipedia REST API — no API key required.
+Uses the Wikipedia REST API - no API key required.
 """
 
 import requests
@@ -26,7 +26,6 @@ TOOL_SCHEMA = {
 
 def search_wikipedia(query: str) -> str:
     try:
-        # Wikipedia REST summary API
         formatted_query = query.strip().replace(" ", "_")
         url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{formatted_query}"
         resp = requests.get(url, timeout=config.REQUEST_TIMEOUT)
