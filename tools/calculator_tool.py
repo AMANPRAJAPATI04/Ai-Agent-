@@ -2,7 +2,7 @@
 Calculator Tool
 ---------------
 Safely evaluates math expressions.
-Uses Python's 'ast' module for safe parsing — never raw eval() (important
+Uses Python's 'ast' module for safe parsing - never raw eval() (important
 for security, otherwise arbitrary code could be executed).
 """
 
@@ -25,7 +25,6 @@ TOOL_SCHEMA = {
     }
 }
 
-# Only these operators are allowed (for safety)
 ALLOWED_OPERATORS = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -38,7 +37,6 @@ ALLOWED_OPERATORS = {
     ast.FloorDiv: operator.floordiv,
 }
 
-# Only these math functions are allowed
 ALLOWED_FUNCTIONS = {
     "sqrt": math.sqrt,
     "sin": math.sin,
