@@ -23,7 +23,6 @@ TOOL_SCHEMA = {
     }
 }
 
-# Open-Meteo weather codes converted into readable text
 WEATHER_CODES = {
     0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
     45: "Fog", 48: "Depositing rime fog",
@@ -37,7 +36,6 @@ WEATHER_CODES = {
 
 def get_weather(city: str) -> str:
     try:
-        # Step 1: Get lat/long for the city (geocoding)
         geo_url = "https://geocoding-api.open-meteo.com/v1/search"
         geo_resp = requests.get(geo_url, params={"name": city, "count": 1}, timeout=config.REQUEST_TIMEOUT)
         geo_data = geo_resp.json()
@@ -49,7 +47,6 @@ def get_weather(city: str) -> str:
         lat, lon = place["latitude"], place["longitude"]
         full_name = f"{place['name']}, {place.get('country', '')}"
 
-        # Step 2: Fetch the weather
         weather_url = "https://api.open-meteo.com/v1/forecast"
         w_resp = requests.get(
             weather_url,
@@ -70,7 +67,7 @@ def get_weather(city: str) -> str:
 
         return (
             f"Weather in {full_name}:\n"
-            f"- Temperature: {temp}°C\n"
+            f"- Temperature: {temp} degrees C\n"
             f"- Condition: {condition}\n"
             f"- Wind Speed: {wind} km/h"
         )
