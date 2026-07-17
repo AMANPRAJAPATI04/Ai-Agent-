@@ -2,7 +2,7 @@
 Time Tool
 ---------
 Tells you the current date & time for any city/timezone.
-Uses Python's built-in zoneinfo module — no API key required.
+Uses Python's built-in zoneinfo module - no API key required.
 """
 
 from datetime import datetime
@@ -24,7 +24,6 @@ TOOL_SCHEMA = {
     }
 }
 
-# Common city name -> IANA timezone mapping (in case the model doesn't know the exact timezone)
 CITY_ALIASES = {
     "delhi": "Asia/Kolkata",
     "mumbai": "Asia/Kolkata",
@@ -55,7 +54,7 @@ def get_time(timezone: str = None) -> str:
             )
 
         now = datetime.now(ZoneInfo(tz_key))
-        formatted = now.strftime("%A, %d %B %Y — %I:%M:%S %p (%Z)")
+        formatted = now.strftime("%A, %d %B %Y - %I:%M:%S %p (%Z)")
 
         return f"Current time in {tz_key}: {formatted}"
 
