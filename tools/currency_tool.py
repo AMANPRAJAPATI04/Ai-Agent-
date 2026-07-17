@@ -2,7 +2,7 @@
 Currency Converter Tool
 -----------------------
 Converts an amount from one currency to another.
-Uses a free exchange rate API — no API key required.
+Uses a free exchange rate API - no API key required.
 """
 
 import requests
@@ -34,7 +34,6 @@ TOOL_SCHEMA = {
 
 def convert_currency(amount: float, from_currency: str = None, to_currency: str = None) -> str:
     try:
-        # Use config default currency if the user didn't specify one
         from_curr = (from_currency or config.DEFAULT_CURRENCY).strip().upper()
         to_curr = (to_currency or config.DEFAULT_CURRENCY).strip().upper()
 
