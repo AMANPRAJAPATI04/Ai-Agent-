@@ -1,0 +1,9 @@
+# Never commit API keys or secrets to GitHub
+.streamlit/secrets.toml
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Environment files
+.env
