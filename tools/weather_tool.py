@@ -1,8 +1,8 @@
 """
 Weather Tool
 ------------
-Tells you the current weather for any city.
-Uses the Open-Meteo API (completely FREE, no API key required).
+Gets the current weather using Open-Meteo API.
+No API key required.
 """
 
 import requests
@@ -10,13 +10,13 @@ import config
 
 TOOL_SCHEMA = {
     "name": "get_weather",
-    "description": "Gets the current weather (temperature, wind, condition) for any city or location.",
+    "description": "Get the current weather for any city.",
     "input_schema": {
         "type": "object",
         "properties": {
             "city": {
                 "type": "string",
-                "description": "The city name, e.g. 'London', 'New York', 'Mumbai'"
+                "description": "City name"
             }
         },
         "required": ["city"]
@@ -24,57 +24,98 @@ TOOL_SCHEMA = {
 }
 
 WEATHER_CODES = {
-    0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
-    45: "Fog", 48: "Depositing rime fog",
-    51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
-    61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
-    71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow",
-    80: "Slight rain showers", 81: "Moderate rain showers", 82: "Violent rain showers",
-    95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Thunderstorm with heavy hail"
+    0: "Clear Sky",
+    1: "Mainly Clear",
+    2: "Partly Cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Fog",
+    51: "Light Drizzle",
+    53: "Drizzle",
+    55: "Heavy Drizzle",
+    61: "Light Rain",
+    63: "Rain",
+    65: "Heavy Rain",
+    71: "Light Snow",
+    73: "Snow",
+    75: "Heavy Snow",
+    80: "Rain Showers",
+    81: "Moderate Rain Showers",
+    82: "Heavy Rain Showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with Hail",
+    99: "Heavy Thunderstorm"
 }
 
 
-def get_weather(city: str) -> str:
-    try:
-        geo_url = "https://geocoding-api.open-meteo.com/v1/search"
-        geo_resp = requests.get(geo_url, params={"name": city, "count": 1}, timeout=config.REQUEST_TIMEOUT)
-        geo_data = geo_resp.json()
+def get_weather(city: str):
 
-        if not geo_data.get("results"):
-            return f"Couldn't find a place called '{city}'. Please check the spelling."
+    # Step 1: Get Latitude & Longitude
+    geo_url = "https://geocoding-api.open-meteo.com/v1/search"
 
-        place = geo_data["results"][0]
-        lat, lon = place["latitude"], place["longitude"]
-        full_name = f"{place['name']}, {place.get('country', '')}"
+    geo = requests.get(
+        geo_url,
+        params={
+            "name": city,
+            "count": 1
+        },
+        timeout=config.REQUEST_TIMEOUT
+    ).json()
 
-        weather_url = "https://api.open-meteo.com/v1/forecast"
-        w_resp = requests.get(
-            weather_url,
-            params={
-                "latitude": lat,
-                "longitude": lon,
-                "current_weather": True
-            },
-            timeout=config.REQUEST_TIMEOUT
-        )
-        w_data = w_resp.json()
-        current = w_data.get("current_weather", {})
+    if "results" not in geo:
+        return {"error": f"City '{city}' not found."}
 
-        temp = current.get("temperature")
-        wind = current.get("windspeed")
-        code = current.get("weathercode")
-        condition = WEATHER_CODES.get(code, "Unknown")
+    place = geo["results"][0]
 
-        return (
-            f"Weather in {full_name}:\n"
-            f"- Temperature: {temp} degrees C\n"
-            f"- Condition: {condition}\n"
-            f"- Wind Speed: {wind} km/h"
-        )
+    lat = place["latitude"]
+    lon = place["longitude"]
 
-    except Exception as e:
-        return f"Error fetching weather: {str(e)}"
+    # Step 2: Get Current Weather
+    weather_url = "https://api.open-meteo.com/v1/forecast"
+
+    weather = requests.get(
+        weather_url,
+        params={
+            "latitude": lat,
+            "longitude": lon,
+            "current": "temperature_2m,wind_speed_10m,weather_code,relative_humidity_2m"
+        },
+        timeout=config.REQUEST_TIMEOUT
+    ).json()
+
+    current = weather["current"]
+
+    return {
+        "city": place["name"],
+        "country": place["country"],
+        "temperature": current["temperature_2m"],
+        "humidity": current["relative_humidity_2m"],
+        "wind_speed": current["wind_speed_10m"],
+        "condition": WEATHER_CODES.get(current["weather_code"], "Unknown")
+    }
+
+
+def execute(arguments: dict):
+    city = arguments.get("city")
+
+    if not city:
+        return {"error": "City is required"}
+
+    return get_weather(city)
 
 
 if __name__ == "__main__":
-    print(get_weather("London"))
+
+    result = get_weather("London")
+
+    if "error" in result:
+        print(result["error"])
+    else:
+        print(f"""
+Current weather in {result['city']}, {result['country']}
+
+🌡 Temperature : {result['temperature']}°C
+☁ Condition   : {result['condition']}
+💧 Humidity   : {result['humidity']}%
+💨 Wind Speed : {result['wind_speed']} km/h
+""")
